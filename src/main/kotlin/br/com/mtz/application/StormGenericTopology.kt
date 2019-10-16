@@ -42,9 +42,9 @@ class StormGenericTopology(private val topologyProperties: TopologyProperties) {
 
         builder.setSpout("random.word.spout", RandomWordSpout(), 5)
 
-        builder.setBolt("word.count.bolt", WordCountBolt(), 5).allGrouping("random.word.spout")
+        builder.setBolt("word.count.bolt", WordCountBolt(), 5).shuffleGrouping("random.word.spout")
 
-        builder.setBolt("print.count.bolt", PrintCountBolt(), 2).allGrouping("word.count.bolt")
+        builder.setBolt("print.count.bolt", PrintCountBolt(), 2).fieldsGrouping("word.count.bolt", Fields("word", "count"))
 
         return builder.createTopology()
     }
