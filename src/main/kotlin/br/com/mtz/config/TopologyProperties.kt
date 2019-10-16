@@ -32,7 +32,7 @@ class TopologyProperties(fileName: String) {
         stormConfig["debug"] = debug
         stormConfig["stormWorkersNumber"] = stormWorkersNumber
         stormConfig["maxTaskParallism"] = maxTaskParallism
-        stormConfig[Config.TOPOLOGY_TRIDENT_BATCH_EMIT_INTERVAL_MILLIS] = topologyBatchEmitMillis
+        stormConfig[Config.TOPOLOGY_TRIDENT_BATCH_EMIT_INTERVAL_MILLIS] = Integer.parseInt(topologyBatchEmitMillis)
         stormConfig[Config.NIMBUS_SEEDS] = parseHosts(nimbusSeeds)
         stormConfig[Config.NIMBUS_THRIFT_PORT] = Integer.parseInt(nimbusPort)
         stormConfig[Config.STORM_ZOOKEEPER_PORT] = parseZkPort(zookeeperHosts)

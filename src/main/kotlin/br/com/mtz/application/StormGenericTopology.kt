@@ -53,6 +53,7 @@ class StormGenericTopology(private val topologyProperties: TopologyProperties) {
 
 fun main(args: Array<String>) {
 
+    System.setProperty("storm.jar", "/home/mateus-cruz/Documents/Projects/pessoal/storm-test/target/storm-test-1.0-SNAPSHOT.jar")
     val topologyProperties = TopologyProperties("application.properties")
     val stormTopology = StormGenericTopology(topologyProperties)
     stormTopology.runTopology()
