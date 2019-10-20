@@ -32,6 +32,7 @@ class StormGenericTopology(private val topologyProperties: TopologyProperties) {
                 System.exit(0)
             }
         }
+
     }
 
     private fun buildTopology(): StormTopology {
@@ -47,13 +48,14 @@ class StormGenericTopology(private val topologyProperties: TopologyProperties) {
         builder.setBolt("print.count.bolt", PrintCountBolt(), 2).fieldsGrouping("word.count.bolt", Fields("word", "count"))
 
         return builder.createTopology()
+
     }
 
 }
 
 fun main(args: Array<String>) {
 
-    System.setProperty("storm.jar", "/home/mateus-cruz/Documents/Projects/pessoal/storm-test/target/storm-test-1.0-SNAPSHOT.jar")
+    System.setProperty("storm.jar", "/Users/mateus/Documents/Pessoal/storm-test/target/storm-test-1.0-SNAPSHOT.jar")
     val topologyProperties = TopologyProperties("application.properties")
     val stormTopology = StormGenericTopology(topologyProperties)
     stormTopology.runTopology()

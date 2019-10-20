@@ -13,7 +13,7 @@ class PrintCountBolt : BaseBasicBolt() {
     private val log = LoggerFactory.getLogger(this.javaClass)
 
     override fun execute(tuple: Tuple, colletor: BasicOutputCollector) {
-        log.info("Loggin count of words {}", tuple.getString(0))
+        log.info("Word {} count {}", tuple.getString(0), tuple.getInteger(1))
         colletor.emit(Values(tuple.getString(0)))
     }
 
