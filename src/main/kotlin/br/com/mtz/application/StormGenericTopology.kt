@@ -1,15 +1,18 @@
 package br.com.mtz.application
 
-import br.com.mtz.bolt.PrintCountBolt
+import br.com.mtz.bolt.SplitSentenceBolt
 import br.com.mtz.bolt.WordCountBolt
 import br.com.mtz.config.TopologyProperties
-import br.com.mtz.spout.RandomWordSpout
 import org.apache.storm.LocalCluster
 import org.apache.storm.StormSubmitter
 import org.apache.storm.generated.StormTopology
+import org.apache.storm.kafka.bolt.KafkaBolt
+import org.apache.storm.kafka.bolt.mapper.FieldNameBasedTupleToKafkaMapper
+import org.apache.storm.kafka.spout.KafkaSpout
+import org.apache.storm.kafka.spout.KafkaSpoutConfig
 import org.apache.storm.topology.TopologyBuilder
-import org.apache.storm.tuple.Fields
 import org.slf4j.LoggerFactory
+import java.util.Properties
 
 class StormGenericTopology(private val topologyProperties: TopologyProperties) {
 
@@ -41,11 +44,42 @@ class StormGenericTopology(private val topologyProperties: TopologyProperties) {
 
         val builder = TopologyBuilder()
 
-        builder.setSpout("random.word.spout", RandomWordSpout(), 5)
+        val properties: Properties = Properties().apply {
+            this.putAll(mapOf(
+                "bootstrap.servers" to "3.18.107.217:9092",
+                "acks" to "1",
+                "key.serializer" to "org.apache.kafka.common.serialization.StringSerializer",
+                "value.serializer" to "org.apache.kafka.common.serialization.StringSerializer"
+            ))
+        }
 
-        builder.setBolt("word.count.bolt", WordCountBolt(), 5).shuffleGrouping("random.word.spout")
+        val offlineTopicConfig = KafkaSpoutConfig.builder(topologyProperties.kafkaBootstrapServers, "minas.offline.input").build()
+        val currentModelTopicConfig = KafkaSpoutConfig.builder(topologyProperties.kafkaBootstrapServers, "minas.current.model").build()
+        val onlineTopicConfig = KafkaSpoutConfig.builder(topologyProperties.kafkaBootstrapServers, "minas.online.input").build()
 
-        builder.setBolt("print.count.bolt", PrintCountBolt(), 2).fieldsGrouping("word.count.bolt", Fields("word", "count"))
+        val kafkaOfflineBolt = KafkaBolt<Any, Any>()
+            .withProducerProperties(properties)
+            .withTopicSelector("minas.current.model")
+            .withTupleToKafkaMapper(FieldNameBasedTupleToKafkaMapper())
+
+        val kafkaOnlineBolt = KafkaBolt<Any, Any>()
+            .withProducerProperties(properties)
+            .withTopicSelector("minas.current.model")
+            .withTupleToKafkaMapper(FieldNameBasedTupleToKafkaMapper())
+
+        builder.setSpout("minas.offline.spout", KafkaSpout(offlineTopicConfig), 1)
+
+        builder.setBolt("minas.offline.process.bolt", SplitSentenceBolt(), 3).shuffleGrouping("minas.offline.spout")
+
+        builder.setBolt("minas.offline.publish.bolt", kafkaOfflineBolt, 3).shuffleGrouping("minas.offline.process.bolt")
+
+        builder.setSpout("minas.model.spout", KafkaSpout(currentModelTopicConfig), 1)
+
+        builder.setSpout("minas.online.spout", KafkaSpout(onlineTopicConfig), 1)
+
+        builder.setBolt("minas.online.process.bolt", WordCountBolt(), 3).shuffleGrouping("minas.online.spout").shuffleGrouping("minas.model.spout")
+
+        builder.setBolt("minas.online.publish.bolt", kafkaOnlineBolt, 3).shuffleGrouping("minas.online.process.bolt")
 
         return builder.createTopology()
 

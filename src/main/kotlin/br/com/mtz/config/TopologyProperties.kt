@@ -18,6 +18,7 @@ class TopologyProperties(fileName: String) {
     lateinit var debug: String
     lateinit var stormWorkersNumber: String
     lateinit var maxTaskParallism: String
+    lateinit var kafkaBootstrapServers: String
     var stormConfig: Config = Config()
 
     init {
@@ -55,6 +56,7 @@ class TopologyProperties(fileName: String) {
         debug = properties.getProperty("storm.execution.debug", "true")
         stormWorkersNumber = properties.getProperty("storm.workers.number", "1")
         maxTaskParallism = properties.getProperty("storm.max.task.parallelism", "2")
+        kafkaBootstrapServers = properties.getProperty("kafka.bootstrap.servers")
     }
 
     private fun readPropertiesFile(fileName: String): Properties {

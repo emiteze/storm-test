@@ -6,19 +6,18 @@ import org.apache.storm.topology.base.BaseBasicBolt
 import org.apache.storm.tuple.Fields
 import org.apache.storm.tuple.Tuple
 import org.apache.storm.tuple.Values
-import org.slf4j.LoggerFactory
 
-class PrintCountBolt : BaseBasicBolt() {
+class SplitSentenceBolt : BaseBasicBolt() {
 
-    private val log = LoggerFactory.getLogger(this.javaClass)
-
-    override fun execute(tuple: Tuple, colletor: BasicOutputCollector) {
-        log.info("Word {} count {}", tuple.getString(0), tuple.getInteger(1))
-        colletor.emit(Values(tuple.getString(0)))
+    override fun execute(tuple: Tuple, collector: BasicOutputCollector) {
+        val sentence: String = tuple.getString(0)
+        sentence.split(" ").forEach {
+            collector.emit(Values(it))
+        }
     }
 
     override fun declareOutputFields(declarer: OutputFieldsDeclarer) {
-        declarer.declare(Fields("counts"))
+        declarer.declare(Fields("word"))
     }
 
 }
