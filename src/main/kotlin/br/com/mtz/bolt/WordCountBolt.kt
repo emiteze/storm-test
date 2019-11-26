@@ -36,23 +36,7 @@ class WordCountBolt : BaseBasicBolt() {
                 collector.emit(Values(word))
             }
         }
-
-        /*
-        if(tuple.sourceComponent == Constants.SYSTEM_COMPONENT_ID && tuple.sourceStreamId == Constants.SYSTEM_TICK_STREAM_ID) {
-            counts.keys.forEach { word ->
-                val count = counts[word]
-                collector.emit(Values("$word $count"))
-                log.info("Emitting a count of {} for word {}", count , word)
-            }
-        } else {
-            val word = tuple.getStringByField("value").split(" ")[0]
-            var count = counts[word]
-            if(count == null) count = 0
-            count++
-            counts[word] = count
-            log.info("Incrementing a count of {} for word {}", count , word)
-        }
-        */
+        
     }
 
     override fun declareOutputFields(declarer: OutputFieldsDeclarer) {
