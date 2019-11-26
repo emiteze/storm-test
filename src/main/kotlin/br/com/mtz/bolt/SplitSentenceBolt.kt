@@ -10,14 +10,14 @@ import org.apache.storm.tuple.Values
 class SplitSentenceBolt : BaseBasicBolt() {
 
     override fun execute(tuple: Tuple, collector: BasicOutputCollector) {
-        val sentence: String = tuple.getString(0)
+        val sentence: String = tuple.getStringByField("value")
         sentence.split(" ").forEach {
             collector.emit(Values(it))
         }
     }
 
     override fun declareOutputFields(declarer: OutputFieldsDeclarer) {
-        declarer.declare(Fields("word"))
+        declarer.declare(Fields("message"))
     }
 
 }
